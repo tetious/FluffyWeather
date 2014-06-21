@@ -22,7 +22,7 @@ const byte DIO_XBEE_TX = 11;
 //
 
 const byte BOUNCE_DELAY_MS = 10;
-const byte UPDATE_RATE_MS = 500;
+const int UPDATE_RATE_MS = 1000;
 
 volatile unsigned long rainInches = 0;
 volatile int windDirection = 0, windSpeed = 0;
