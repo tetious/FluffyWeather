@@ -43,6 +43,8 @@ void setup()
   pinMode(DIO_XBEE_SLEEP, OUTPUT);
   digitalWrite(DIO_XBEE_SLEEP, HIGH);
 
+  pinMode(AIO_WIND_DIRECTION, INPUT);
+
   xbeeSerial.begin(9600);
   Serial.begin(9600);
 }
@@ -93,34 +95,27 @@ void IRQ_windSpeed()
 void sendWeatherUpdate(Stream &out)
 {
   String msg = "?";
-  msg += "hi=test1";
+  msg += "ms=";
+  msg += millis();
+  msg += "wd=";
+  msg += getWindDirection();
   msg += "&hi2=test2";
   out.println(msg);
 }
 
 int getWindDirection() 
-// read the wind direction sensor, return heading in degrees
 {
   unsigned int adc = averageAnalogRead(AIO_WIND_DIRECTION); 
 
-  // TODO: Will these be different for 3.3v?
+  if (adc <= 94) return 90;
+  if (adc <= 186) return 135;
+  if (adc <= 288) return 180;
+  if (adc <= 461) return 45;
+  if (adc <= 628) return 225;
+  if (adc <= 783) return 0;
+  if (adc <= 884) return 315;
+  if (adc <= 941) return 270;
 
-  if (adc < 380) return (113);
-  if (adc < 393) return (68);
-  if (adc < 414) return (90);
-  if (adc < 456) return (158);
-  if (adc < 508) return (135);
-  if (adc < 551) return (203);
-  if (adc < 615) return (180);
-  if (adc < 680) return (23);
-  if (adc < 746) return (45);
-  if (adc < 801) return (248);
-  if (adc < 833) return (225);
-  if (adc < 878) return (338);
-  if (adc < 913) return (0);
-  if (adc < 940) return (293);
-  if (adc < 967) return (315);
-  if (adc < 990) return (270);
   return (-1);
 }
 
