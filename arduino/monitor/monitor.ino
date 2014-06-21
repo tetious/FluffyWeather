@@ -58,7 +58,7 @@ void loop()
   digitalWrite(DIO_XBEE_SLEEP, LOW);
 
   // send message
-  sendWeatherUpdate(Serial);
+  sendWeatherUpdate(xbeeSerial);
   // TODO: make sure we keep up with the clock
 
   // sleep radio
