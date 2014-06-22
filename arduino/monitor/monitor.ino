@@ -97,13 +97,14 @@ void IRQ_windSpeed()
 
 void sendWeatherUpdate(Stream &out)
 {
-  String msg = "?";
-  msg += "ms=";
-  msg += millis();
-  msg += "wd=";
-  msg += getWindDirection();
-  msg += "&hi2=test2";
-  out.println(msg);
+  out.print("[");
+  out.print("ms=");
+  out.print(millis());
+  out.print("ri=");
+  out.print(getRainInches());
+  out.print("wd=");
+  out.print(getWindDirection());
+  out.println("]");
 }
 
 int getWindDirection() 
@@ -120,6 +121,13 @@ int getWindDirection()
   if (adc <= 941) return 270;
 
   return (-1);
+}
+
+float getRainInches()
+{
+  float rainTemp = rainInches;
+  rainInches = 0;
+  return rainTemp;
 }
 
 int averageAnalogRead(int pinToRead)
