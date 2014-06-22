@@ -24,8 +24,8 @@ const byte DIO_XBEE_TX = 11;
 const byte BOUNCE_DELAY_MS = 10;
 const int UPDATE_RATE_MS = 1000;
 
-volatile unsigned long rainInches = 0;
-volatile int windDirection = 0, windSpeed = 0;
+volatile float rainInches = 0, windSpeed = 0;
+volatile int windDirection = 0;
 
 //
 
@@ -45,6 +45,8 @@ void setup()
 
   pinMode(AIO_WIND_DIRECTION, INPUT);
 
+  interrupts();
+
   xbeeSerial.begin(9600);
   Serial.begin(9600);
 }
@@ -56,6 +58,7 @@ void loop()
 
   // wake radio
   digitalWrite(DIO_XBEE_SLEEP, LOW);
+  delay(100);
 
   // send message
   sendWeatherUpdate(xbeeSerial);
@@ -63,7 +66,7 @@ void loop()
 
   // sleep radio
   digitalWrite(DIO_XBEE_SLEEP, HIGH);
-  delay(UPDATE_RATE_MS - (millis() - deltaStart)); // wait the rest of the rate if we need to
+  delay(UPDATE_RATE_MS - (millis() - deltaStart)); // wait the rest of the update rate if we need to
 }
 
 // Interrupts //
