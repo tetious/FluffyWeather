@@ -74,9 +74,10 @@ void loop()
 void IRQ_rain()
 {
   static long lastRainUpdate = 0;
-  if(millis() - lastRainUpdate > BOUNCE_DELAY_MS)
+  long now = millis();
+  if(now - lastRainUpdate > BOUNCE_DELAY_MS)
   {
-    lastRainUpdate = millis();
+    lastRainUpdate = now;
     rainInches += 0.011;
   }
 }
@@ -89,7 +90,6 @@ void IRQ_windSpeed()
   {
     windSpeed = ((now - lastWindUpdate) / 1000.0) * 1.492;
     lastWindUpdate = now;
-    float delta = millis();
   }
 }
 
