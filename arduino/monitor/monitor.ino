@@ -23,8 +23,9 @@ const byte DIO_XBEE_TX = 11;
 
 const byte BOUNCE_DELAY_MS = 10;
 const int UPDATE_RATE_MS = 1000;
+const byte WIND_SPEED_SAMPLE_COUNT = 5;
 
-volatile float rainInches = 0, windSpeed = 0;
+volatile float rainInches = 0, windClicks = 0;
 volatile int windDirection = 0;
 
 //
@@ -88,7 +89,7 @@ void IRQ_windSpeed()
   long now = millis();
   if(now - lastWindUpdate > BOUNCE_DELAY_MS)
   {
-    windSpeed = ((now - lastWindUpdate) / 1000.0) * 1.492;
+    windClicks++;
     lastWindUpdate = now;
   }
 }
@@ -102,6 +103,8 @@ void sendWeatherUpdate(Stream &out)
   out.print(millis());
   out.print("ri=");
   out.print(getRainInches());
+  out.print("ws=");
+  out.print(getWindSpeed());
   out.print("wd=");
   out.print(getWindDirection());
   out.println("]");
@@ -128,6 +131,27 @@ float getRainInches()
   float rainTemp = rainInches;
   rainInches = 0;
   return rainTemp;
+}
+
+float getWindSpeed()
+{
+  static long lastWindFetch = 0;
+  static float windSpeed = 0;
+
+  long now = millis();
+  long deltaTime = now - lastWindFetch;
+
+  // The wind sensor has fairly low resolution, so we should not update as frequently to get nearer
+  // to a valid instant wind speed.
+  if(deltaTime > WIND_SPEED_SAMPLE_COUNT * UPDATE_RATE_MS)
+  {
+    windSpeed = windClicks / (deltaTime / 1000.0) * 1.492;
+
+    lastWindFetch = now;
+    windClicks = 0;
+  }
+
+  return windSpeed;
 }
 
 int averageAnalogRead(int pinToRead)
