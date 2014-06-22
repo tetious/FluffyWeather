@@ -101,11 +101,11 @@ void sendWeatherUpdate(Stream &out)
   out.print("[");
   out.print("ms=");
   out.print(millis());
-  out.print("ri=");
+  out.print("&ri=");
   out.print(getRainInches());
-  out.print("ws=");
+  out.print("&ws=");
   out.print(getWindSpeed());
-  out.print("wd=");
+  out.print("&wd=");
   out.print(getWindDirection());
   out.println("]");
 }
