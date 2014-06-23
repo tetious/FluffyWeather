@@ -9,6 +9,7 @@ Inspired by Nathan Seidle's WIMP. (https://github.com/sparkfun/Wimp_Weather_Stat
 
 #include <Wire.h>
 #include <SoftwareSerial.h>
+#include "HTU21D.h"
 
 const byte AIO_WIND_DIRECTION = A0;
 
@@ -31,6 +32,7 @@ volatile int windDirection = 0;
 //
 
 SoftwareSerial xbeeSerial(DIO_XBEE_RX, DIO_XBEE_TX);
+HTU21D htuSensor;
 
 // Arduino //
 
@@ -107,6 +109,10 @@ void sendWeatherUpdate(Stream &out)
   out.print(getWindSpeed());
   out.print("&wd=");
   out.print(getWindDirection());
+  out.print("&t=");
+  out.print(htuSensor.readTemperature());
+  out.print("&h=");
+  out.print(htuSensor.readHumidity());
   out.println("]");
 }
 
