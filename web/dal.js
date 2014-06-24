@@ -10,6 +10,11 @@ var DataAccess = function (config) {
 };
 
 DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
+
+    if(rawWeatherUpdate.match(/^\[.*\]$/)){
+        return console.log("Skipping incomplete frame: "+ rawWeatherUpdate);
+    }
+
     var update = {};
     rawWeatherUpdate.replace(/(\[|\])/g, '').split('&').forEach(function (item) {
         var splitItem = item.split('=');
@@ -19,10 +24,11 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
     var now = new Date();
     var last = this.weatherUpdates.last();
     if(last && now.getMinutes() != last.added.getMinutes()) {
+        console.log("Saving reading to pgsql.");
         this.insertReading();
     }
 
-    this.weatherUpdates.push({
+    var parsed = {
         rainfall: parseFloat(update['ri']),
         wind_speed: parseFloat(update['ws']),
         wind_direction: parseFloat(update['wd']),
@@ -30,7 +36,10 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
         pressure: parseFloat(update['p']),
         humidity: parseFloat(update['h']),
         added: new Date()
-    });
+    };
+    console.log(JSON.stringify(parsed));
+
+    this.weatherUpdates.push(parsed);
 };
 
 DataAccess.prototype.insertReading = function() {
@@ -41,7 +50,7 @@ DataAccess.prototype.insertReading = function() {
     this.weatherUpdates.forEach(function(update) {
         _.pairs(_.omit(update, 'added')).forEach(function(pair) {
             var datapoint = pair[0], v = pair[1];
-            if(!reading[datapoint]) reading[datapoint] = {high: 0.0, low: 0.0, mean: 0.0, total: 0.0,
+            if(!reading[datapoint]) reading[datapoint] = {high: 0.0, low: v, mean: 0.0, total: 0.0,
                 instant_count: this.weatherUpdates.length, updated_on: now.toUTCString(), reading_name: datapoint};
             if(v > reading[datapoint].high) reading[datapoint].high = v;
             if(v < reading[datapoint].low) reading[datapoint].low = v;
@@ -51,8 +60,8 @@ DataAccess.prototype.insertReading = function() {
 
     // set the mean on all the readings and then insert
     _.values(reading).forEach(function(r) {
-        r.total = r.total.toFixed(4);
-        r.mean = (r.total / r.instant_count).toFixed(4);
+        r.total = Math.roundFour(r.total);
+        r.mean = Math.roundFour(r.total / r.instant_count);
         this.runQuery(sql.insert('reading', r));
     }, this);
 
@@ -60,16 +69,10 @@ DataAccess.prototype.insertReading = function() {
 };
 
 DataAccess.prototype.runQuery = function(sql, resultCallback)  {
-    console.log(sql.toString());
-
     var query = this.client.query(sql.toString(), resultCallback);
 
     query.on('error', function(err) {
         console.error('PGSQL: Error running query.', err);
-    });
-
-    query.on('end', function() {
-       console.log("end");
     });
 };
 

@@ -8,7 +8,8 @@
         "svd-xbee": "0.3.6",
         "pg": "3.3.0",
         "sql-bricks": "0.7.6",
-        "db-migrate": "0.6.4"
+        "serialport": "1.4.0",
+        "underscore": "1.6.0"
     },
     "devDependencies": {
         "should": "4.0.4"

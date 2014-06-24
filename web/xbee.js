@@ -1,9 +1,18 @@
-var xbee = require('svd-xbee');
+var sp = require("serialport");
 
 var Xbee = function(dal) {
     this.dal = dal;
-    this.xbee = new xbee({port: '/dev/ttyAMA0'});
+    var port = new sp.SerialPort("/dev/ttyAMA0", {
+        parser: sp.parsers.readline("\n")
+    });
 
+    port.on('open', function() {
+        console.log("Serial port open.");
+
+        port.on('data', function(data) {
+            dal.insertWeatherUpdate(data);
+        });
+    })
 };
 
 module.exports = Xbee;
