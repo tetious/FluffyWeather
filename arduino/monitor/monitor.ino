@@ -144,7 +144,7 @@ int getWindDirection()
   if (adc <= 628) return 225;
   if (adc <= 783) return 0;
   if (adc <= 884) return 315;
-  if (adc <= 941) return 270;
+  if (adc <= 945) return 270;
 
   return (-1);
 }
