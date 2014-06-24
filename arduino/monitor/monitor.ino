@@ -9,7 +9,8 @@ Inspired by Nathan Seidle's WIMP. (https://github.com/sparkfun/Wimp_Weather_Stat
 
 #include <Wire.h>
 #include <SoftwareSerial.h>
-#include "HTU21D.h"
+#include <HTU21D.h>
+#include <SFE_BMP180.h>
 
 const byte AIO_WIND_DIRECTION = A0;
 
@@ -22,6 +23,8 @@ const byte DIO_XBEE_TX = 11;
 
 //
 
+const float ALTITUDE = 254.8;
+
 const byte BOUNCE_DELAY_MS = 10;
 const int UPDATE_RATE_MS = 1000;
 const byte WIND_SPEED_SAMPLE_COUNT = 5;
@@ -33,6 +36,7 @@ volatile int windDirection = 0;
 
 SoftwareSerial xbeeSerial(DIO_XBEE_RX, DIO_XBEE_TX);
 HTU21D htuSensor;
+SFE_BMP180 bmpSensor;
 
 // Arduino //
 
@@ -52,6 +56,10 @@ void setup()
 
   xbeeSerial.begin(9600);
   Serial.begin(9600);
+
+  if(!bmpSensor.begin()) {
+    sendError(xbeeSerial, "Could not initialize BMP180.");
+  }
 }
 
 void loop()
@@ -111,8 +119,17 @@ void sendWeatherUpdate(Stream &out)
   out.print(getWindDirection());
   out.print("&t=");
   out.print(htuSensor.readTemperature());
+  out.print("&p=");
+  out.print(getPressure());
   out.print("&h=");
   out.print(htuSensor.readHumidity());
+  out.println("]");
+}
+
+void sendError(Stream &out, String error) 
+{
+  out.print("[e=");
+  out.print(error);
   out.println("]");
 }
 
@@ -158,6 +175,45 @@ float getWindSpeed()
   }
 
   return windSpeed;
+}
+
+double getBmpSensorTemp()
+{
+  byte wait = bmpSensor.startTemperature();
+  if(wait == 0) {
+    return -1;
+  }
+
+  delay(wait);
+  double temperature;
+  wait = bmpSensor.getTemperature(temperature);
+  if(wait == 0) {
+    return -2;
+  }
+
+  return temperature;
+}
+
+double getPressure()
+{
+  byte wait = bmpSensor.startPressure(3);
+  if(wait == 0) {
+    return -10;
+  }
+
+  delay(wait);
+  double pressure=0;
+  double temp = getBmpSensorTemp();
+  if(temp == 0) {
+    return temp;
+  }
+
+  wait = bmpSensor.getPressure(pressure, temp);
+  if(wait == 0) {
+    return -20;
+  }
+
+  return bmpSensor.sealevel(pressure, ALTITUDE);
 }
 
 int averageAnalogRead(int pinToRead)
