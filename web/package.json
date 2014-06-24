@@ -1,0 +1,16 @@
+{
+    "name": "fluffy-weather",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "express": "4.4.4",
+        "errorhandler": "1.1.1",
+        "svd-xbee": "0.3.6",
+        "pg": "3.3.0",
+        "sql-bricks": "0.7.6",
+        "db-migrate": "0.6.4"
+    },
+    "devDependencies": {
+        "should": "4.0.4"
+    }
+}
