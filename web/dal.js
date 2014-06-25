@@ -16,7 +16,13 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
     }
 
     var update = {};
-    rawWeatherUpdate.replace(/(\[|\])/g, '').split('&').forEach(function (item) {
+    var updates = rawWeatherUpdate.replace(/(\[|\])/g, '').split('&');
+    // [ms=6703026&ri=0.00&ws=1.49&wd=180&t=30.52&p=623.52&h=59.09&v=3400]
+    if(updates.length != 8) {
+        return console.warn("Skipping frame with missing elements." + rawWeatherUpdate);
+    }
+
+    updates.forEach(function (item) {
         var splitItem = item.split('=');
         update[splitItem[0]] = splitItem[1];
     });
