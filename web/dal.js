@@ -41,6 +41,7 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
         temperature: parseFloat(update['t']),
         pressure: parseFloat(update['p']),
         humidity: parseFloat(update['h']),
+        voltage: parseInt(update['v']),
         added: new Date()
     };
     console.log(JSON.stringify(parsed));
