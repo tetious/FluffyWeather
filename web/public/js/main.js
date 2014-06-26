@@ -1,12 +1,10 @@
-
-function degreesToDirection(degrees) {
-    var converted = Math.floor(degrees / 22.5) + .5;
-    var directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-    return  directions[(converted % 16)];
-}
-
-
 $(function() {
+    function degreesToDirection(degrees) {
+        var converted = Math.floor(degrees / 22.5 + .5);
+        var directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+        return directions[converted];
+    }
+
     setInterval(function() {
         $.getJSON("/api/weather", function(data) {
             $("body").fadeIn();
