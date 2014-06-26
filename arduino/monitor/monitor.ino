@@ -44,7 +44,8 @@ SFE_BMP180 bmpSensor;
 
 void setup()
 {
-  wdt_enable(WDTO_2S);
+  wdt_reset();
+  wdt_enable(WDTO_8S);
 
   pinMode(DIO_RAIN, INPUT_PULLUP);  
   attachInterrupt(0, IRQ_rain, FALLING);  
