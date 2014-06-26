@@ -16,16 +16,19 @@ if(app.get('env') === 'dev') {
 }
 
 var router = express.Router();
+var dal = new DataAccess(db[app.get('env')]);
 
 router.route('/api/weather')
     .get(function (req, res, next) {
-        res.send('GET');
+        dal.getLatestUpdate(function(update) {
+            res.send(update);
+        });
     });
 
 app.use(router);
 
 
 
-//http.createServer(app).listen(app.get('port'), function() {
-//   console.log('Listening on http://localhost:3000');
-//});
+http.createServer(app).listen(app.get('port'), function() {
+   console.log('Listening on http://localhost:3000');
+});

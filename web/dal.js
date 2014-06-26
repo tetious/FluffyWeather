@@ -6,10 +6,16 @@ var pg = require('pg'),
 
 var DataAccess = function (config) {
     this.client = new pg.Client(config);
-    this.redisClient = redis.createClient(6379, config.host);
+    this.redisClient = redis.createClient(6379, config.redisHost);
     this.client.connect();
     this.instantListKey = "instants";
     this.lastUpdate = null;
+};
+
+DataAccess.prototype.getLatestUpdate = function(cb) {
+    this.redisClient.lindex(this.instantListKey, 0, function(e, update) {
+        cb(update);
+    });
 };
 
 DataAccess.prototype.getLastUpdate = function() {
@@ -25,7 +31,7 @@ DataAccess.prototype.getLastUpdate = function() {
     } else {
         return self.lastUpdate;
     }
-}
+};
 
 DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
 

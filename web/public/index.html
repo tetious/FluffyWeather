@@ -1,0 +1,92 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather! With fluff!</title>
+    <link rel="stylesheet" href="css/foundation.css" />
+      <link rel="stylesheet" href="css/weather.css" />
+    <script src="js/vendor/modernizr.js"></script>
+  </head>
+  <body style="display:none">
+    <div class="row">
+        <div class="large-12 columns">
+            <h3>FluffyWeather!</h3>
+        </div>
+    </div>
+    <div class="row">
+      <div class="large-12 columns">
+        <ul class="medium-block-grid-4">
+            <li>
+                <div class="callout panel text-center">
+                    <h4>Temperature (f)</h4>
+                    <h1 id="temperature" class="warm">85</h1>
+                    <h2>
+                        <span class="warm">h:</span> <span id="temperature-high">1</span>
+                        <span class="cool">l:</span> <span id="temperature-low">1</span>
+                    </h2>
+                </div>
+            </li>
+            <li>
+                <div class="callout panel text-center">
+                    <h4>Humidity (%)</h4>
+                    <h1 id="humidity" class="warm">85</h1>
+                    <h2>
+                        <span class="warm">h:</span> <span id="humidity-high">1</span>
+                        <span class="cool">l:</span> <span id="humidity-low">1</span>
+                    </h2>
+                </div>
+            </li>
+            <li>
+                <div class="callout panel text-center">
+                    <h4>Pressure (mb)</h4>
+                    <h1 id="pressure" class="warm">85</h1>
+                    <h2>
+                        <span class="warm">h:</span> <span id="pressure-high">1</span>
+                        <span class="cool">l:</span> <span id="pressure-low">1</span>
+                    </h2>
+                </div>
+            </li>
+            <li>
+                <div class="callout panel text-center">
+                    <h4>Rainfall (in.)</h4>
+                    <h1 id="rainfall" class="warm">85</h1>
+                    <h2>
+                        <span class="warm">h:</span> <span id="rainfall-high">1</span>
+                        <span class="cool">l:</span> <span id="rainfall-low">1</span>
+                    </h2>
+                </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="row">
+        <div class="large-12 columns">
+            <ul class="medium-block-grid-2">
+                <li>
+                    <div class="callout panel text-center">
+                        <h4>Wind (f)</h4>
+                        <h1 id="wind-direction">N</h1>
+                        <h1 id="wind-speed">13</h1>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="large-12 columns">
+            <small id="voltage">3400mv - </small>
+            <small id="updated">dt</small>
+        </div>
+    </div>
+
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/foundation.min.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+  </body>
+</html>
