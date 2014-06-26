@@ -2,11 +2,8 @@ var express = require('express'),
     errorHandler = require('errorhandler'),
     path = require('path'),
     http = require('http'),
-    Xbee = require('./xbee');
-
-var db = require('./database.json')
-
-var DataAccess = require('./dal');
+    db = require('./database.json'),
+    DataAccess = require('./dal');
 
 var app = express();
 
@@ -27,8 +24,7 @@ router.route('/api/weather')
 
 app.use(router);
 
-var dal = new DataAccess(db[app.get('env')]);
-var xbee = new Xbee(dal);
+
 
 //http.createServer(app).listen(app.get('port'), function() {
 //   console.log('Listening on http://localhost:3000');
