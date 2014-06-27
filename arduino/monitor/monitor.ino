@@ -82,7 +82,7 @@ void loop()
 
   // wake radio
   digitalWrite(DIO_XBEE_SLEEP, LOW);
-  delay(200);
+  delay(100);
 
   // send message
   sendWeatherUpdate(xbeeSerial);
