@@ -22,6 +22,8 @@ const byte DIO_XBEE_SLEEP = 9;
 const byte DIO_XBEE_RX = 10;
 const byte DIO_XBEE_TX = 11;
 
+const byte LED = 13;
+
 //
 
 const float ALTITUDE = 254.8;
@@ -45,6 +47,10 @@ SFE_BMP180 bmpSensor;
 void setup()
 {
   wdt_reset();
+
+  pinMode(LED, OUTPUT); 
+  sayHi();
+
   wdt_enable(WDTO_8S);
 
   pinMode(DIO_RAIN, INPUT_PULLUP);  
@@ -253,4 +259,27 @@ int averageAnalogRead(int pinToRead)
   runningValue /= numberOfReadings;
 
   return(runningValue);  
+}
+
+void sayHi()
+{
+  digitalWrite(LED, HIGH);
+  delay(100);
+  digitalWrite(LED, LOW);
+  delay(100);
+  digitalWrite(LED, HIGH);
+  delay(100);
+  digitalWrite(LED, LOW);
+  delay(100);
+  digitalWrite(LED, HIGH);
+  delay(100);
+  digitalWrite(LED, LOW);
+  delay(100);
+  digitalWrite(LED, HIGH);
+  delay(100);
+  digitalWrite(LED, LOW);
+  delay(100);
+  digitalWrite(LED, HIGH);
+  delay(100);
+  digitalWrite(LED, LOW);
 }
