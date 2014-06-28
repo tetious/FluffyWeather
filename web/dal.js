@@ -9,12 +9,35 @@ var DataAccess = function (config) {
     this.redisClient = redis.createClient(6379, config.redisHost);
     this.client.connect();
     this.instantListKey = "instants";
+    this.snapshotKey = "snapshot";
     this.lastUpdate = null;
 };
 
 DataAccess.prototype.getLatestUpdate = function(cb) {
+    var self = this;
+
+    var latest = {};
     this.redisClient.lindex(this.instantListKey, 0, function(e, update) {
-        cb(update);
+        latest.latest = JSON.parse(update);
+        self.redisClient.get(self.snapshotKey, function(e, snapshot) {
+            latest.snapshot = JSON.parse(snapshot);
+            cb(latest);
+        })
+    });
+};
+
+DataAccess.prototype.processLatestUpdate = function(update) {
+    var self = this;
+    var now = new Date();
+
+    this.redisClient.get(this.snapshotKey, function(e, snapshot){
+        snapshot = self.createReadings([JSON.stringify(update)], JSON.parse(snapshot));
+        if(snapshot.last_update && snapshot.last_update.getDay() != now.getDay()) {
+            snapshot = {};
+        }
+
+        snapshot.last_update = new Date();
+        self.redisClient.set(self.snapshotKey, JSON.stringify(snapshot));
     });
 };
 
@@ -64,41 +87,60 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
         wind_direction: parseFloat(update['wd']),
         temperature: parseFloat(update['t']),
         pressure: parseFloat(update['p']),
-        humidity: parseFloat(update['h']),
+        humidity: parseFloat(update['h'] - 10),
         voltage: parseInt(update['v']),
+        uptime: parseInt(update['ms']),
         added: new Date()
     };
 
     var jsonParsed = JSON.stringify(parsed);
+    if(parsed.temperature > 60 || parsed.pressure < 0 || parsed.humidity > 100) {
+        return console.log("Skipping frame with outlier data: " + jsonParsed);
+    }
+
     console.log(jsonParsed);
     this.lastUpdate = parsed;
+    this.processLatestUpdate(parsed);
     this.redisClient.lpush(this.instantListKey, jsonParsed);
+};
+
+DataAccess.prototype.createReadings = function(instants, reading) {
+    if(!reading) reading = {};
+    instants.forEach(function(update) {
+        var weatherUpdate = JSON.parse(update);
+        _.pairs(_.omit(weatherUpdate, ['added','uptime'])).forEach(function(pair) {
+            var datapoint = pair[0], v = pair[1];
+            if(!reading[datapoint]) reading[datapoint] = {high: 0.0, low: v, mean: 0.0, total: 0.0,
+                instant_count: instants.length, updated_on: weatherUpdate.added.toUTCString(), reading_name: datapoint};
+
+            if(instants.length == 1) reading[datapoint].instant_count++;
+
+            if(v > reading[datapoint].high) reading[datapoint].high = v;
+            if(v < reading[datapoint].low) reading[datapoint].low = v;
+            reading[datapoint].total +=v;
+        });
+    });
+
+    // set the mean on all the readings
+    _.values(reading).forEach(function(r) {
+        r.total = Math.roundFour(r.total);
+        r.mean = Math.roundFour(r.total / r.instant_count);
+    });
+
+    return reading;
 };
 
 DataAccess.prototype.insertReading = function() {
     var reading = {};
-    var now = new Date();
+    var self = this;
     console.log("Starting PGSQL insert.");
 
     // we need to turn the list of updates into a list of readings, one per data point
     this.redisClient.lrange(this.instantListKey, 0, -1, function(err, instants){
-        instants.forEach(function(update) {
-            var weatherUpdate = JSON.parse(update);
-            _.pairs(_.omit(weatherUpdate, 'added')).forEach(function(pair) {
-                var datapoint = pair[0], v = pair[1];
-                if(!reading[datapoint]) reading[datapoint] = {high: 0.0, low: v, mean: 0.0, total: 0.0,
-                    instant_count: instants.length, updated_on: weatherUpdate.added.toUTCString(), reading_name: datapoint};
-                if(v > reading[datapoint].high) reading[datapoint].high = v;
-                if(v < reading[datapoint].low) reading[datapoint].low = v;
-                reading[datapoint].total +=v;
-            });
-        });
+        reading = self.createReadings(instants);
     });
 
-    // set the mean on all the readings and then insert
     _.values(reading).forEach(function(r) {
-        r.total = Math.roundFour(r.total);
-        r.mean = Math.roundFour(r.total / r.instant_count);
         this.runQuery(sql.insert('reading', r));
     }, this);
 
