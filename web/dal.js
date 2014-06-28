@@ -81,13 +81,14 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
         this.insertReading();
     }
 
+    var clampedHumidity = parseFloat(update['h'] - 10);
     var parsed = {
         rainfall: parseFloat(update['ri']),
         wind_speed: parseFloat(update['ws']),
         wind_direction: parseFloat(update['wd']),
         temperature: parseFloat(update['t']),
         pressure: parseFloat(update['p']),
-        humidity: parseFloat(update['h'] - 10),
+        humidity: parseFloat(clampedHumidity > 100 ? 100 : clampedHumidity),
         voltage: parseInt(update['v']),
         uptime: parseInt(update['ms']),
         added: new Date()
