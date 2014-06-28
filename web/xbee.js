@@ -1,4 +1,6 @@
-var sp = require("serialport");
+var sp = require("serialport"),
+    db = require('./database.json'),
+    DataAccess = require('./dal');
 
 var Xbee = function(dal) {
     this.dal = dal;
@@ -15,4 +17,5 @@ var Xbee = function(dal) {
     })
 };
 
-module.exports = Xbee;
+var dal = new DataAccess(db[process.env.NODE_ENV || 'dev']);
+var xbee = new Xbee(dal);
