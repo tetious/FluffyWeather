@@ -27,7 +27,7 @@ $(function() {
         x /= 60;
         var hours = x % 24;
         x /= 24;
-        return x.toFixed(0) + "d" + hours.toFixed(0) + "h" + minutes.toFixed(0) + "m" + seconds.toFixed(0) + "s";
+        return Math.floor(x) + "d" + Math.floor(hours) + "h" + Math.floor(minutes) + "m" + Math.floor(seconds) + "s";
     }
 
     setInterval(function() {
