@@ -81,7 +81,7 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
         this.insertReading();
     }
 
-    var clampedHumidity = parseFloat(update['h'] - 10);
+    var clampedHumidity = parseFloat(update['h']);
     var parsed = {
         rainfall: parseFloat(update['ri']),
         wind_speed: parseFloat(update['ws']),
@@ -94,15 +94,25 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
         added: new Date()
     };
 
+    console.log(rawWeatherUpdate);
+    this.cleanupFrame(parsed);
     var jsonParsed = JSON.stringify(parsed);
-    if(parsed.temperature > 60 || parsed.pressure < 0 || parsed.humidity > 100) {
-        return console.log("Skipping frame with outlier data: " + jsonParsed);
-    }
 
     console.log(jsonParsed);
     this.lastUpdate = parsed;
     this.processLatestUpdate(parsed);
     this.redisClient.lpush(this.instantListKey, jsonParsed);
+};
+
+DataAccess.prototype.cleanupFrame = function(parsed) {
+    if(parsed.temperature > 60 || parsed.humidity > 100) {
+        delete parsed.temperature;
+        delete parsed.humidity;
+    }
+
+    if(parsed.pressure === null || parsed.pressure < 0) {
+        delete parsed.pressure;
+    }
 };
 
 DataAccess.prototype.createReadings = function(instants, reading) {
