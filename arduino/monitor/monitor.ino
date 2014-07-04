@@ -18,9 +18,9 @@ const byte AIO_WIND_DIRECTION = A0;
 const byte DIO_RAIN = 2;
 const byte DIO_WIND_SPEED = 3;
 
-const byte DIO_XBEE_SLEEP = 9;
-const byte DIO_XBEE_RX = 10;
-const byte DIO_XBEE_TX = 11;
+const byte DIO_XBEE_SLEEP = 10;
+const byte DIO_XBEE_RX = 11;
+const byte DIO_XBEE_TX = 12;
 
 const byte LED = 13;
 
