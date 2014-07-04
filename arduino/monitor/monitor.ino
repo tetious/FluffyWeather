@@ -152,14 +152,14 @@ int getWindDirection()
 {
   unsigned int adc = averageAnalogRead(AIO_WIND_DIRECTION); 
 
-  if (adc <= 94) return 90;
+  if (adc <= 93) return 90;
   if (adc <= 186) return 135;
-  if (adc <= 288) return 180;
-  if (adc <= 461) return 45;
-  if (adc <= 628) return 225;
-  if (adc <= 783) return 0;
-  if (adc <= 884) return 315;
-  if (adc <= 945) return 270;
+  if (adc <= 289) return 180;
+  if (adc <= 465) return 45;
+  if (adc <= 632) return 225;
+  if (adc <= 789) return 0;
+  if (adc <= 890) return 315;
+  if (adc <= 947) return 270;
 
   return (-1);
 }
