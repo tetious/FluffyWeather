@@ -69,13 +69,13 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
         return console.warn("Skipping frame with missing elements." + rawWeatherUpdate);
     }
 
+    var lastUpdate = this.getLastUpdate();
     updates.forEach(function (item) {
         var splitItem = item.split('=');
         update[splitItem[0]] = splitItem[1];
     });
 
     var now = new Date();
-    var lastUpdate = this.getLastUpdate();
     if(lastUpdate && now.getMinutes() != lastUpdate.added.getMinutes()) {
         console.log("Saving reading to pgsql.");
         this.insertReading();
@@ -95,7 +95,7 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
     };
 
     console.log(rawWeatherUpdate);
-    this.cleanupFrame(parsed);
+    this.cleanupFrame(parsed, lastUpdate);
     var jsonParsed = JSON.stringify(parsed);
 
     console.log(jsonParsed);
@@ -104,25 +104,51 @@ DataAccess.prototype.insertWeatherUpdate = function(rawWeatherUpdate) {
     this.redisClient.lpush(this.instantListKey, jsonParsed);
 };
 
-DataAccess.prototype.cleanupFrame = function(parsed) {
-    if(parsed.temperature > 60 || parsed.humidity > 100) {
-        delete parsed.temperature;
-        delete parsed.humidity;
+DataAccess.prototype.cleanupFrame = function(parsed, prior) {
+
+    // TODO: Make all this more generic and sane.
+
+    _.keys(_.omit(parsed, ['added','uptime', 'wind_speed', 'wind_direction', 'rainfall'])).forEach(function(key) {
+        if(isNaN(parsed[key])){
+            console.log("Deleting key as it is NaN: " + key);
+            delete parsed[key];
+        }
+
+        if(!prior) {
+            return;
+        }
+
+        var diff = Math.abs(parsed[key] - prior[key]) / prior[key] * 100;
+
+        if(diff > 10) {
+            console.log("Deleting key as it changed more than 10% since the last reading: " + key);
+            delete parsed[key];
+        }
+    });
+
+    if(parsed.rainfall > 0.5 || parsed.rainfall < 0) {
+        console.log("Deleting rainfall as it is out of range");
+        delete parsed.rainfall;
     }
 
-    if(parsed.pressure === null || parsed.pressure < 0) {
-        delete parsed.pressure;
+    if(parsed.wind_direction > 360 || parsed.wind_direction < 0) {
+        console.log("Deleting wind_direction as it is out of range");
+        delete parsed.wind_direction;
     }
 };
 
 DataAccess.prototype.createReadings = function(instants, reading) {
     if(!reading) reading = {};
+
     instants.forEach(function(update) {
         var weatherUpdate = JSON.parse(update);
         _.pairs(_.omit(weatherUpdate, ['added','uptime'])).forEach(function(pair) {
             var datapoint = pair[0], v = pair[1];
-            if(!reading[datapoint]) reading[datapoint] = {high: 0.0, low: v, mean: 0.0, total: 0.0,
-                instant_count: instants.length, updated_on: weatherUpdate.added.toUTCString(), reading_name: datapoint};
+
+            if(!reading[datapoint]) {
+                reading[datapoint] = {high: 0.0, low: v, mean: 0.0, total: 0.0,
+                    instant_count: instants.length, updated_on: weatherUpdate.added.toUTCString(), reading_name: datapoint};
+            }
 
             if(instants.length == 1) reading[datapoint].instant_count++;
 
@@ -149,15 +175,15 @@ DataAccess.prototype.insertReading = function() {
     // we need to turn the list of updates into a list of readings, one per data point
     this.redisClient.lrange(this.instantListKey, 0, -1, function(err, instants){
         reading = self.createReadings(instants);
+
+        _.values(reading).forEach(function(r) {
+            self.runQuery(sql.insert('reading', r));
+        });
+
+        console.log("Clearing list.");
+        self.redisClient.del(self.instantListKey);
+        console.log("PGSQL insert complete.");
     });
-
-    _.values(reading).forEach(function(r) {
-        this.runQuery(sql.insert('reading', r));
-    }, this);
-
-    console.log("Clearing list.");
-    this.redisClient.del(this.instantListKey);
-    console.log("PGSQL insert complete.");
 };
 
 DataAccess.prototype.runQuery = function(sql, resultCallback)  {
