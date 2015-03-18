@@ -3,9 +3,9 @@
     "version": "0.0.1",
     "private": true,
     "dependencies": {
-        "express": "4.4.4",
-        "errorhandler": "1.1.1",
-        "svd-xbee": "0.3.6",
+        "express": "4.4.x",
+        "body-parser": "1.5.x",
+        "errorhandler": "1.1.x",
         "pg": "3.3.0",
         "sql-bricks": "0.7.6",
         "serialport": "1.4.0",
