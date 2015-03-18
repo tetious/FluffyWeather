@@ -56,6 +56,11 @@ $(function() {
             $("#voltage").text(latest.voltage);
             $("#updated").text(latest.added);
             $("#uptime").text(convertUptime(latest.uptime));
+
+            document.title = "FW: " + celsiusToFahrenheit(latest.temperature) + 'F | ' +
+              degreesToDirection(latest.wind_direction) + ' ' + latest.wind_speed + 'mph | ' +
+              latest.humidity + '%';
+
         });
     }, 1000);
 });
