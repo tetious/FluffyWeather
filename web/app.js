@@ -3,11 +3,11 @@ var express = require('express'),
     path = require('path'),
     http = require('http'),
     db = require('./database.json'),
-    DataAccess = require('./dal');
+    DataAccess = require('./dal'),
+    bodyParser = require('body-parser');
 
 var app = express();
 
-app.set('port', 3000);
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('env', process.env.NODE_ENV || 'dev');
 
@@ -27,8 +27,23 @@ router.route('/api/weather')
 
 app.use(router);
 
+var backend = express();
+backend.use(bodyParser.text());
 
+var backendRouter = express.Router();
 
-http.createServer(app).listen(app.get('port'), function() {
-   console.log('Listening on http://localhost:3000');
+backendRouter.route('/api/sensor')
+    .post(function (req, res, next) {
+        dal.insertWeatherUpdate(req.body);
+        res.send(200);
+    });
+
+backend.use(backendRouter);
+
+http.createServer(app).listen(3000, function() {
+   console.log('Frontend listening on 3000.');
 });
+http.createServer(backend).listen(3001, function() {
+    console.log('Backend listening on 3001.')
+});
+
