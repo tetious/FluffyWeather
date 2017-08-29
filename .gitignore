@@ -3,6 +3,7 @@ node_modules
 database.json
 .pioenvs
 .piolibdeps
+esp8266/cmake-build-debug/
 */**/.vscode/c_cpp_properties.json
 wifi_creds.h
 CMakeListsPrivate.txt
